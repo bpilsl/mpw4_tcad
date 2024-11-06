@@ -1,0 +1,104 @@
+// globalTCADsolutions~IPD~MINIMOS~framework~release-gts-2023-03_b24~mmntnice~1.4
+/*
+ *
+ * Created: Wed Nov 06 12:15:10 CET 2024
+ *
+ **/
+
+#include <defaults.ipd>
+
+Device : ~DeviceDefaults
+{
+  Input
+  {
+    file = "minimos";
+    fileType = "devbz";
+  }
+  Output
+  {
+    file = "minimos_out";
+    fileType = "tdr";
+    enable = ~Extern.step % 20 == 0;
+  }
+  Grid
+  {
+    simulationGrid = "simulationGrid";
+  }
+  Phys
+  {
+    +bandGapNarrowing = "";
+    +contactBack
+    {
+      Contact
+      {
+        Ohmic
+        {
+          type = "Voltage";
+        }
+      }
+    }
+  }
+  +contactTop = 0.0 "V";
+  +contactBack = step(0.0 "V", -2000.0 "V", 1.0 "V", deltaMax = -50.0 "V", deltaMin = -0.001 "V");
+}
+Curve : CurveDefaults
+{
+  Response
+  {
+    +VcontactTop = output("Device", "V", "contactTop");
+    +IcontactTop = output("Device", "I", "contactTop");
+    +VcontactBack = output("Device", "V", "contactBack");
+    +IcontactBack = output("Device", "I", "contactBack");
+  }
+}
+Metainfo
+{
+  Segments
+  {
+    Bulk
+    {
+      material = "Silicon";
+    }
+    contactTop
+    {
+      material = "Conductor";
+    }
+    contactBack
+    {
+      material = "Conductor";
+    }
+  }
+}
+Iterate : IterateDefaults
+{
+  Scheme
+  {
+    DD
+    {
+      iterationLimit = 5000;
+    }
+  }
+}
+SteppingControl
+{
+  Scheme : SchemeDefaults
+  {
+    +default : DefaultStepping
+    {
+      incIterLimit = 20;
+      decIterLimit = 60;
+      incFactor = 5.0;
+      decFactor = 5.0;
+    }
+  }
+}
+Num : NumDefaults
+{
+  externalSolver = true;
+  numProcessors = 16;
+}
+Solve : SolveDefaults
+{
+  transient = true;
+  time = step(0.0 "s", 5e-12 "s", 5e-13 "s");  // time domain: use stepping function
+}
